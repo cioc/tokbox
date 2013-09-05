@@ -47,16 +47,21 @@ func New(apikey, partnerSecret string) (*Tokbox) {
 
 //remember expiration = 86400 is 24 hours
 func (s *Session) Token(role string, connectionData string, expiration int64) (string, error) {
-  now := time.Now().Unix()
+  now := time.Now().UTC().Unix()
 
-  dataVals := url.Values{}
-  dataVals.Add("session_id", s.SessionId)
-  dataVals.Add("create_time", fmt.Sprintf("%d", now))
-  dataVals.Add("expire_time", fmt.Sprintf("%d", now + expiration))
-  dataVals.Add("role", role)
-  dataVals.Add("connection_data", connectionData)
-  dataVals.Add("nonce", fmt.Sprintf("%d", rand.Intn(999999)))
-  dataStr := dataVals.Encode()
+  dataStr := ""
+  dataStr += "session_id="+url.QueryEscape(s.SessionId)
+  dataStr += "&create_time="+url.QueryEscape(fmt.Sprintf("%d", now))
+  if expiration > 0 {
+    dataStr += "&expire_time="+url.QueryEscape(fmt.Sprintf("%d", now + expiration))
+  }
+  if len(role) > 0{
+    dataStr += "&role="+url.QueryEscape(role)
+  }
+  if len(connectionData) > 0 {
+    dataStr += "&connection_data="+url.QueryEscape(connectionData)
+  }
+  dataStr += "&nonce="+url.QueryEscape(fmt.Sprintf("%d", rand.Intn(999999)))
 
   h := hmac.New(sha1.New, []byte(s.t.partnerSecret))
   n, err := h.Write([]byte(dataStr))
@@ -67,13 +72,13 @@ func (s *Session) Token(role string, connectionData string, expiration int64) (s
     return "", fmt.Errorf("hmac not enough bytes written %d != %d", n, len(dataStr))
   }
 
-  tk := url.Values{}
-  tk.Add("partner_id", s.t.apiKey)
-  tk.Add("sig", fmt.Sprintf("%x:%s", h.Sum(nil), dataStr))
+  preCoded := ""
+  preCoded += "partner_id="+s.t.apiKey
+  preCoded += "&sig="+fmt.Sprintf("%x:%s", h.Sum(nil), dataStr)
 
   var buf bytes.Buffer
   encoder := base64.NewEncoder(base64.StdEncoding, &buf)
-  encoder.Write([]byte(tk.Encode()))
+  encoder.Write([]byte(preCoded))
   encoder.Close()
   return fmt.Sprintf("T1==%s", buf.String()), nil
 }

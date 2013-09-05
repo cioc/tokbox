@@ -5,18 +5,8 @@ import (
   "log"
 )
 
-const key = "<your key here>"
-const secret = "<your secret here>"
-
-func TestNewSession(t *testing.T) {
-  tokbox := New(key, secret)
-  session, err := tokbox.NewSession("", true)
-  if err != nil {
-    log.Fatal(err)
-    t.FailNow()
-  }
-  log.Println(session)
-}
+const key = "<your api key here>"
+const secret = "<your partner secret here>"
 
 func TestToken(t *testing.T) {
   tokbox := New(key, secret)
@@ -25,7 +15,8 @@ func TestToken(t *testing.T) {
     log.Fatal(err)
     t.FailNow()
   }
-  token, err := session.Token("publisher", "", 86400)
+  log.Println(session)
+  token, err := session.Token("", "", -1) //defaults to publisher, no connection data and expires in 24 hours
   if err != nil {
     log.Fatal(err)
     t.FailNow()
