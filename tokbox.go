@@ -20,8 +20,10 @@ import (
 	"time"
 )
 
-const apiHost = "https://api.opentok.com/hl"
-const apiSession = "/session/create"
+const (
+	apiHost    = "https://api.opentok.com/hl"
+	apiSession = "/session/create"
+)
 
 type Tokbox struct {
 	apiKey        string
