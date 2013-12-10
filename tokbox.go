@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"net/url"
 
-	"io/ioutil"
-
 	"encoding/base64"
 	"encoding/xml"
 
@@ -110,15 +108,13 @@ func (t *Tokbox) NewSession(location string, p2p bool) (*Session, error) {
 	if res.StatusCode != 200 {
 		return &Session{}, fmt.Errorf("Tokbox returns error code: %v", res.StatusCode)
 	}
-	b, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return &Session{}, err
-	}
+
 	var s sessions
-	err = xml.Unmarshal(b, &s)
-	if err != nil {
+	dec := xml.NewDecoder(res.Body)
+	if err = dec.Decode(&s); err != nil {
 		return &Session{}, err
 	}
+
 	if len(s.Sessions) < 1 {
 		return &Session{}, fmt.Errorf("tokbox did not return a session")
 	}
