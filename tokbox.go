@@ -110,8 +110,7 @@ func (t *Tokbox) NewSession(location string, p2p bool) (*Session, error) {
 	}
 
 	var s sessions
-	dec := xml.NewDecoder(res.Body)
-	if err = dec.Decode(&s); err != nil {
+	if err = xml.NewDecoder(res.Body).Decode(&s); err != nil {
 		return &Session{}, err
 	}
 
